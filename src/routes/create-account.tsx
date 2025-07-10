@@ -1,48 +1,25 @@
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import React, { useState } from "react";
-import styled from "styled-components";
+import { auth } from "../firebase";
+import { useNavigate, Link } from "react-router-dom";
+import { FirebaseError } from "firebase/app";
+import {
+  Error,
+  Input,
+  Switcher,
+  Title,
+  Wrapper,
+  Form,
+} from "../components/auth-components";
 
-const Wrapper = styled.div`
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  width: 420px;
-  padding: 50px 0px;
-`;
-
-const Title = styled.h1`
-  font-size: 42px;
-`;
-
-const Form = styled.form`
-  margin-top: 50px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-`;
-
-const Input = styled.input`
-  padding: 10px 20px;
-  border-radius: 50px;
-  border: none;
-  width: 100%;
-  font-size: 16px;
-  &[type="submit"] {
-    cursor: pointer;
-    &:hover {
-      opacity: 0.8;
-    }
-  }
-`;
-
-const Error = styled.span`
-  font-weight: 600;
-  color: tomato;
-`;
+// const errors = {
+//   "auth/email-already-in-use" : "That email already exists.",
+// }
 
 export default function CreateAccount() {
   // return <h1>create account</h1>;
 
+  const navigate = useNavigate();
   const [isLoading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -61,14 +38,35 @@ export default function CreateAccount() {
       setPassword(value);
     }
   };
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError("");
+    if (isLoading || name === "" || email === "" || password === "") return; // 필수 값이 비어있거나 아직 로딩중이면 함수 중지
     try {
+      setLoading(true);
+
       // create an account
+      const credentials = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      console.log(credentials.user);
+
       // set the name of the user
+      await updateProfile(credentials.user, {
+        displayName: name,
+      });
+
       // redirect to the homepage
+      navigate("/");
     } catch (e) {
       // set error
+      // console.log(e);
+      if (e instanceof FirebaseError) {
+        console.log(e.code, e.message); // code 오류를 잘 볼 것!
+        setError(e.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -77,7 +75,7 @@ export default function CreateAccount() {
 
   return (
     <Wrapper>
-      <Title>Log into X</Title>
+      <Title>Join X</Title>
       <Form onSubmit={onSubmit}>
         <Input
           onChange={onChange}
@@ -109,6 +107,9 @@ export default function CreateAccount() {
         />
       </Form>
       {error !== "" ? <Error>{error}</Error> : null}
+      <Switcher>
+        Already have an account? <Link to="/login">Login &rarr;</Link>
+      </Switcher>
     </Wrapper>
   );
 }
