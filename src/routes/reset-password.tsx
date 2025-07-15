@@ -1,50 +1,47 @@
+import { sendPasswordResetEmail } from "firebase/auth";
 import React, { useState } from "react";
 import { auth } from "../firebase";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { FirebaseError } from "firebase/app";
-import { signInWithEmailAndPassword } from "firebase/auth";
 import {
   Error,
-  Form,
   Input,
   Switcher,
   Title,
   Wrapper,
+  Form,
 } from "../components/auth-components";
-import GithubButton from "../components/github-btn";
 
 // const errors = {
 //   "auth/email-already-in-use" : "That email already exists.",
 // }
 
-export default function CreateAccount() {
-  // return <h1>create account</h1>;
-
+export default function ResetPassword() {
   const navigate = useNavigate();
   const [isLoading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const {
       target: { name, value },
     } = e;
-    if (name == "email") {
+    if (name === "email") {
       setEmail(value);
-    } else if (name == "password") {
-      setPassword(value);
     }
   };
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
-    if (isLoading || email === "" || password === "") return; // 필수 값이 비어있거나 아직 로딩중이면 함수 중지
+    if (isLoading || email === "") return; // 필수 값이 비어있거나 아직 로딩중이면 함수 중지
     try {
       setLoading(true);
-      await signInWithEmailAndPassword(auth, email, password);
-      // redirect to the homepage
-      navigate("/");
+
+      await sendPasswordResetEmail(auth, email);
+      alert("Password reset email sent. Please check your inbox.");
+
+      // redirect to the login page
+      navigate("/login");
     } catch (e) {
       // set error
       // console.log(e);
@@ -55,12 +52,12 @@ export default function CreateAccount() {
     } finally {
       setLoading(false);
     }
-    console.log(email, password);
+    console.log(email);
   };
 
   return (
     <Wrapper>
-      <Title>Log into X</Title>
+      <Title>Reset Password</Title>
       <Form onSubmit={onSubmit}>
         <Input
           onChange={onChange}
@@ -71,25 +68,18 @@ export default function CreateAccount() {
           required
         />
         <Input
-          onChange={onChange}
-          name="password"
-          value={password}
-          placeholder="Password"
-          type="password"
-          required
+          type="submit"
+          value={isLoading ? "Loading..." : "Reset Password by Email"}
         />
-        <Input type="submit" value={isLoading ? "Loading..." : "Login"} />
       </Form>
       {error !== "" ? <Error>{error}</Error> : null}
       <Switcher>
         Don't have an account?{" "}
-        <Link to="/create-account">Create one &rarr;</Link>
+        <Link to="/create-account"> Create One &rarr;</Link>
       </Switcher>
       <Switcher>
-        Forgot your password?
-        <Link to="/reset-password">Reset it &rarr;</Link>
+        Want to login now? <Link to="/login">Login &rarr;</Link>
       </Switcher>
-      <GithubButton />
     </Wrapper>
   );
 }
