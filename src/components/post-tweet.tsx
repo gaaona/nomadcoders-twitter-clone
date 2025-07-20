@@ -90,7 +90,7 @@ export default function PostTweetFrom() {
 
       if (file) {
         // 사진 DB에 올리기
-        const locationRef = ref(storage, `tweets/${user.uid}-${doc.id}`);
+        const locationRef = ref(storage, `tweets/${user.uid}/${doc.id}`);
         const result = await uploadBytes(locationRef, file);
         // 사진의 URL을 가져와서 doc에 업데이트
         const url = await getDownloadURL(result.ref);
