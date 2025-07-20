@@ -13,5 +13,6 @@ export default function ProtectedRoute({
     return <Navigate to="/login" />;
   }
 
-  return <Home />;
+  return children; // children 반환 안 하면 layout이 렌더링되지 않음
+  // return <Home />; // Uncomment this line if you want to render Home directly
 }
