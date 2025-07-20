@@ -1,5 +1,6 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { auth } from "../firebase";
 
 const Wrapper = styled.div`
   display: grid;
@@ -26,7 +27,7 @@ const MenuItem = styled.div`
   border: 2px solid white;
   height: 50px;
   width: 50px;
-  border-radius: 50%;
+  border-radius: 50%; // h&w의 50% == 25px
   svg {
     width: 30px;
     fill: white;
@@ -38,6 +39,14 @@ const MenuItem = styled.div`
 `;
 
 export default function Layout() {
+  const navigate = useNavigate();
+  const onLogOut = async () => {
+    const ok = confirm("Are you sure you want to log out?");
+    if (ok) {
+      await auth.signOut();
+      navigate("/login");
+    }
+  };
   return (
     <Wrapper>
       <Menu>
@@ -70,7 +79,7 @@ export default function Layout() {
             </svg>
           </MenuItem>
         </Link>
-        <MenuItem className="log-out">
+        <MenuItem onClick={onLogOut} className="log-out">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
