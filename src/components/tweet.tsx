@@ -2,7 +2,7 @@ import React from "react";
 import type { ITweet } from "./timeline";
 import styled from "styled-components";
 import { auth, db, storage } from "../firebase";
-import { deleteDoc, doc } from "firebase/firestore";
+import { deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { deleteObject, ref } from "firebase/storage";
 
 const Wrapper = styled.div`
@@ -41,6 +41,17 @@ const DeleteButton = styled.button`
   cursor: pointer;
 `;
 
+const EditButton = styled.button`
+  background-color: green;
+  color: white;
+  border: 0;
+  font-size: 12px;
+  padding: 5px 10px;
+  text-transform: uppercase;
+  border-radius: 5px;
+  cursor: pointer;
+`;
+
 export default function Tweet({ username, text, photo, userId, id }: ITweet) {
   const user = auth.currentUser;
   const onDelete = async () => {
@@ -57,20 +68,36 @@ export default function Tweet({ username, text, photo, userId, id }: ITweet) {
       console.log(e);
     }
   };
-  return (
-    <Wrapper>
-      <Column>
-        <Username>{username}</Username>
-        <Payload>{text}</Payload>
-        {user?.uid === userId ? (
-          <DeleteButton onClick={onDelete}>Delete</DeleteButton>
-        ) : null}
-      </Column>
-      {photo ? (
+  const onEdit = async () => {
+    const ok = confirm("Do you want to edit this tweet?");
+    if (!ok || user?.uid !== userId) return;
+    const newText = prompt("Edit your tweet:", text);
+    try {
+      await updateDoc(doc, {
+        text: newText,
+      });
+    } catch (e) {
+      console.log(e);
+    }
+
+    return (
+      <Wrapper>
         <Column>
-          <Photo src={photo}></Photo>
+          <Username>{username}</Username>
+          <Payload>{text}</Payload>
+          {user?.uid === userId ? (
+            <DeleteButton onClick={onDelete}>Delete</DeleteButton>
+          ) : null}
+          {user?.uid === userId ? (
+            <EditButton onClick={onEdit}>Edit</EditButton>
+          ) : null}
         </Column>
-      ) : null}
-    </Wrapper>
-  );
+        {photo ? (
+          <Column>
+            <Photo src={photo}></Photo>
+          </Column>
+        ) : null}
+      </Wrapper>
+    );
+  };
 }
