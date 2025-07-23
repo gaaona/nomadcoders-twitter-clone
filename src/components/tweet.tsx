@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import type { ITweet } from "./timeline";
 import styled from "styled-components";
 import { auth, db, storage } from "../firebase";
 import { deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { deleteObject, ref } from "firebase/storage";
+import EditTweetForm from "./edit-tweet-form";
 
 const Wrapper = styled.div`
   display: grid;
@@ -54,6 +55,8 @@ const EditButton = styled.button`
 
 export default function Tweet({ username, text, photo, userId, id }: ITweet) {
   const user = auth.currentUser;
+  const [isEditing, setIsEditing] = useState(false);
+
   const onDelete = async () => {
     const ok = confirm("Are you sure you want to delete this tweet?");
     if (!ok || user?.uid !== userId) return;
@@ -68,36 +71,36 @@ export default function Tweet({ username, text, photo, userId, id }: ITweet) {
       console.log(e);
     }
   };
-  const onEdit = async () => {
-    const ok = confirm("Do you want to edit this tweet?");
-    if (!ok || user?.uid !== userId) return;
-    const newText = prompt("Edit your tweet:", text);
-    try {
-      await updateDoc(doc, {
-        text: newText,
-      });
-    } catch (e) {
-      console.log(e);
-    }
+  const onEdit = () => setIsEditing((prev) => !prev);
 
-    return (
-      <Wrapper>
-        <Column>
-          <Username>{username}</Username>
+  return (
+    <Wrapper>
+      <Column>
+        <Username>{username}</Username>
+        {isEditing ? (
+          <EditTweetForm
+            text={text}
+            photo={photo}
+            id={id}
+            setIsEditing={setIsEditing}
+          />
+        ) : (
           <Payload>{text}</Payload>
-          {user?.uid === userId ? (
-            <DeleteButton onClick={onDelete}>Delete</DeleteButton>
-          ) : null}
-          {user?.uid === userId ? (
-            <EditButton onClick={onEdit}>Edit</EditButton>
-          ) : null}
-        </Column>
-        {photo ? (
-          <Column>
-            <Photo src={photo}></Photo>
-          </Column>
+        )}
+        {user?.uid === userId ? (
+          <DeleteButton onClick={onDelete}>Delete</DeleteButton>
         ) : null}
-      </Wrapper>
-    );
-  };
+        {user?.uid === userId ? (
+          <EditButton onClick={onEdit}>
+            {isEditing ? "Cancel" : "Edit"}
+          </EditButton>
+        ) : null}
+      </Column>
+      {photo ? (
+        <Column>
+          <Photo src={photo}></Photo>
+        </Column>
+      ) : null}
+    </Wrapper>
+  );
 }
