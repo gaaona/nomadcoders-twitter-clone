@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import styled from "styled-components";
 import { auth, db, storage } from "../firebase";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import type { ITweet } from "./timeline";
 
 const Form = styled.form`
   display: flex;
@@ -60,7 +61,12 @@ const SubmitBtn = styled.input`
   }
 `;
 
-export default function EditTweetForm({ photo, text, id, setIsEditing }) {
+export default function EditTweetForm({
+  photo,
+  text,
+  id,
+  setIsEditing,
+}: ITweet) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [editTweet, setEditTweet] = React.useState("");
   const [editFile, setEditFile] = React.useState<File | null>(null);

@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import type { ITweet } from "./timeline";
 import styled from "styled-components";
 import { auth, db, storage } from "../firebase";
-import { deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { deleteDoc, doc } from "firebase/firestore";
 import { deleteObject, ref } from "firebase/storage";
 import EditTweetForm from "./edit-tweet-form";
 
